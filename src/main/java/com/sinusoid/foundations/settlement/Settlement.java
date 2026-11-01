@@ -5,15 +5,16 @@ import java.util.Objects;
 /**
  * Minimal domain representation of a Foundations settlement.
  *
- * <p>A settlement's environment is fixed at founding time. The environment
- * influences future architectural, economic and visual systems, while the
- * settlement itself remains independent from Minecraft registry objects.</p>
+ * <p>A settlement's founding environment and location are fixed at creation
+ * time. Territory, population, buildings and resources remain separate
+ * concerns and will be introduced in later iterations.</p>
  */
 public record Settlement(
     SettlementId id,
     String name,
     SettlementOwner owner,
-    SettlementBiome biome
+    SettlementBiome biome,
+    SettlementLocation location
 ) {
 
     public Settlement {
@@ -21,6 +22,7 @@ public record Settlement(
         Objects.requireNonNull(name, "name");
         Objects.requireNonNull(owner, "owner");
         Objects.requireNonNull(biome, "biome");
+        Objects.requireNonNull(location, "location");
 
         name = name.trim();
 
@@ -33,7 +35,12 @@ public record Settlement(
         }
     }
 
-    public static Settlement create(String name, SettlementOwner owner, SettlementBiome biome) {
-        return new Settlement(SettlementId.random(), name, owner, biome);
+    public static Settlement create(
+        String name,
+        SettlementOwner owner,
+        SettlementBiome biome,
+        SettlementLocation location
+    ) {
+        return new Settlement(SettlementId.random(), name, owner, biome, location);
     }
 }
