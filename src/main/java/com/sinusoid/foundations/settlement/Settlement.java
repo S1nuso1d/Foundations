@@ -5,21 +5,22 @@ import java.util.Objects;
 /**
  * Minimal domain representation of a Foundations settlement.
  *
- * <p>This first version deliberately contains only stable identity, a name,
- * and ownership. Territory, population, buildings, resources, and persistence
- * will be added as separate concerns rather than turning this class into a
- * catch-all container.</p>
+ * <p>A settlement's environment is fixed at founding time. The environment
+ * influences future architectural, economic and visual systems, while the
+ * settlement itself remains independent from Minecraft registry objects.</p>
  */
 public record Settlement(
     SettlementId id,
     String name,
-    SettlementOwner owner
+    SettlementOwner owner,
+    SettlementBiome biome
 ) {
 
     public Settlement {
         Objects.requireNonNull(id, "id");
         Objects.requireNonNull(name, "name");
         Objects.requireNonNull(owner, "owner");
+        Objects.requireNonNull(biome, "biome");
 
         name = name.trim();
 
@@ -32,7 +33,7 @@ public record Settlement(
         }
     }
 
-    public static Settlement create(String name, SettlementOwner owner) {
-        return new Settlement(SettlementId.random(), name, owner);
+    public static Settlement create(String name, SettlementOwner owner, SettlementBiome biome) {
+        return new Settlement(SettlementId.random(), name, owner, biome);
     }
 }
