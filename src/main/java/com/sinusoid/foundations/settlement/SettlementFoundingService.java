@@ -1,10 +1,5 @@
-package com.sinusoid.foundations;
+package com.sinusoid.foundations.settlement;
 
-import com.sinusoid.foundations.settlement.SettlementBiome;
-import com.sinusoid.foundations.settlement.SettlementBiomeResolver;
-import com.sinusoid.foundations.settlement.SettlementFoundingException;
-import com.sinusoid.foundations.settlement.SettlementFoundingRequest;
-import com.sinusoid.foundations.settlement.SettlementRegistry;
 import java.util.Objects;
 
 /**
@@ -26,7 +21,7 @@ public final class SettlementFoundingService {
         this.biomeResolver = Objects.requireNonNull(biomeResolver, "biomeResolver");
     }
 
-    public com.sinusoid.foundations.settlement.Settlement found(SettlementFoundingRequest request) {
+    public Settlement found(SettlementFoundingRequest request) {
         Objects.requireNonNull(request, "request");
 
         if (registry.hasSettlement(request.owner().playerId())) {
