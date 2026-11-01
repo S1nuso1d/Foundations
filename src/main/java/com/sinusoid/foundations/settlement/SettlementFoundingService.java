@@ -1,6 +1,7 @@
 package com.sinusoid.foundations.settlement;
 
 import java.util.Objects;
+import java.util.Optional;
 
 /**
  * Coordinates the domain rules for founding a settlement.
@@ -21,26 +22,57 @@ public final class SettlementFoundingService {
         this.biomeResolver = Objects.requireNonNull(biomeResolver, "biomeResolver");
     }
 
-    public Settlement found(SettlementFoundingRequest request) {
+    public FoundingAttemptResult found(SettlementFoundingRequest request) {
         Objects.requireNonNull(request, "request");
 
         if (registry.hasSettlement(request.owner().playerId())) {
-            throw new SettlementFoundingException(
-                "This player already owns a settlement."
+            return FoundingAttemptResult.failure(
+                SettlementFoundingFailure.OWNER_ALREADY_HAS_SETTLEMENT
             );
         }
 
-        SettlementBiome biome = biomeResolver.resolve(request.biomeId())
-            .orElseThrow(() -> new SettlementFoundingException(
-                "This biome is not supported for settlement founding: "
-                    + request.biomeId()
-            ));
+        Optional<SettlementBiome> biome = biomeResolver.resolve(request.biomeId());
+        if (biome.isEmpty()) {
+            return FoundingAttemptResult.failure(
+                SettlementFoundingFailure.UNSUPPORTED_BIOME
+            );
+        }
 
-        return registry.create(
+        Settlement settlement = registry.create(
             request.name(),
             request.owner(),
-            biome,
+            biome.get(),
             request.location()
         );
+
+        return FoundingAttemptResult.success(settlement);
+    }
+
+    public record FoundingAttemptResult(
+        SettlementFoundingResult success,
+        SettlementFoundingFailure failure
+    ) {
+        private FoundingAttemptResult {
+            if ((success == null) == (failure == null)) {
+                throw new IllegalArgumentException(
+                    "A founding attempt must contain exactly one outcome."
+                );
+            }
+        }
+
+        public static FoundingAttemptResult success(Settlement settlement) {
+            return new FoundingAttemptResult(
+                new SettlementFoundingResult(settlement),
+                null
+            );
+        }
+
+        public static FoundingAttemptResult failure(SettlementFoundingFailure failure) {
+            return new FoundingAttemptResult(null, failure);
+        }
+
+        public boolean isSuccess() {
+            return success != null;
+        }
     }
 }
