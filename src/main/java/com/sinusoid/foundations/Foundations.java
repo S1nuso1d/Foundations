@@ -1,15 +1,16 @@
 package com.sinusoid.foundations;
 
-import net.minecraftforge.fml.common.Mod;
-import org.slf4j.Logger;
 import com.mojang.logging.LogUtils;
+import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
+import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
+import org.slf4j.Logger;
 
 /**
- * Main entry point for the Foundations mod.
+ * Bootstrap entry point for the Foundations mod.
  *
- * <p>This class intentionally remains small. Gameplay systems must live in
- * dedicated modules so the bootstrap layer never becomes a global dumping
- * ground.</p>
+ * <p>Gameplay systems deliberately do not live here. This class owns only
+ * mod bootstrap and common lifecycle wiring.</p>
  */
 @Mod(Foundations.MOD_ID)
 public final class Foundations {
@@ -18,7 +19,11 @@ public final class Foundations {
 
     private static final Logger LOGGER = LogUtils.getLogger();
 
-    public Foundations() {
-        LOGGER.info("Foundations is loading.");
+    public Foundations(FMLJavaModLoadingContext context) {
+        FMLCommonSetupEvent.getBus(context.getModBusGroup()).addListener(this::onCommonSetup);
+    }
+
+    private void onCommonSetup(FMLCommonSetupEvent event) {
+        LOGGER.info("Foundations common setup complete.");
     }
 }
