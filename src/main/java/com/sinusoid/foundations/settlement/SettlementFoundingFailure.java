@@ -1,7 +1,5 @@
 package com.sinusoid.foundations.settlement;
 
-import java.util.Objects;
-
 /**
  * Expected, player-facing reasons why founding cannot proceed.
  *
