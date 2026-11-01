@@ -1,0 +1,26 @@
+modLoader="javafml"
+loaderVersion="[0,)"
+license="All Rights Reserved"
+
+[[mods]]
+modId="foundations"
+version="${file.jarVersion}"
+displayName="Foundations"
+authors="S1nuso1d"
+description='''
+Build a living settlement inside Minecraft.
+'''
+
+[[dependencies.foundations]]
+modId="forge"
+mandatory=true
+versionRange="[0,)"
+ordering="NONE"
+side="BOTH"
+
+[[dependencies.foundations]]
+modId="minecraft"
+mandatory=true
+versionRange="[26.3]"
+ordering="NONE"
+side="BOTH"
