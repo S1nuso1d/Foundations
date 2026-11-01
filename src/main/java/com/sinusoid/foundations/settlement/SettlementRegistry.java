@@ -20,12 +20,6 @@ public final class SettlementRegistry {
     private final Map<SettlementId, Settlement> settlementsById = new HashMap<>();
     private final Map<UUID, SettlementId> settlementByOwner = new HashMap<>();
 
-    /**
-     * Registers a settlement.
-     *
-     * @throws IllegalStateException if its ID already exists or its owner already
-     *                               owns another registered settlement.
-     */
     public void register(Settlement settlement) {
         Objects.requireNonNull(settlement, "settlement");
 
@@ -42,8 +36,13 @@ public final class SettlementRegistry {
         settlementByOwner.put(ownerId, settlement.id());
     }
 
-    public Settlement create(String name, SettlementOwner owner, SettlementBiome biome) {
-        Settlement settlement = Settlement.create(name, owner, biome);
+    public Settlement create(
+        String name,
+        SettlementOwner owner,
+        SettlementBiome biome,
+        SettlementLocation location
+    ) {
+        Settlement settlement = Settlement.create(name, owner, biome, location);
         register(settlement);
         return settlement;
     }
