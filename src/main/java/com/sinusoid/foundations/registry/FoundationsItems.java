@@ -1,7 +1,8 @@
 package com.sinusoid.foundations.registry;
 
 import com.sinusoid.foundations.Foundations;
-import com.sinusoid.foundations.item.TerritorySurveyorItem;\nimport com.sinusoid.foundations.item.SettlementLedgerItem;
+import com.sinusoid.foundations.item.TerritorySurveyorItem;
+import com.sinusoid.foundations.item.SettlementLedgerItem;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
 import net.minecraftforge.registries.DeferredRegister;
@@ -28,6 +29,9 @@ public final class FoundationsItems {
     public static final RegistryObject<Item> TERRITORY_SURVEYOR =
         ITEMS.register("territory_surveyor", TerritorySurveyorItem::new);
 
-    public static final RegistryObject<Item> SETTLEMENT_LEDGER =\n        ITEMS.register("settlement_ledger", SettlementLedgerItem::new);\n\n    private FoundationsItems() {
+    public static final RegistryObject<Item> SETTLEMENT_LEDGER =
+        ITEMS.register("settlement_ledger", SettlementLedgerItem::new);
+
+    private FoundationsItems() {
     }
 }
