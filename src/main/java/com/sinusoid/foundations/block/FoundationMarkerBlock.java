@@ -79,7 +79,7 @@ public final class FoundationMarkerBlock extends Block {
 
         if (result.isSuccess()) {
             player.displayClientMessage(
-                Component.literal("Settlement founded: " + result.settlement().name()),
+                Component.literal("Settlement founded: " + result.success().settlement().name()),
                 true
             );
         } else {
