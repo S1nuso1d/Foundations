@@ -39,7 +39,7 @@ public final class SettlementLedgerItem extends Item {
         SettlementSavedData worldData = SettlementWorldDataAccess.get(serverLevel);
         Optional<Settlement> settlement = worldData.registry().findByOwner(player.getUUID());
         if (settlement.isEmpty()) {
-            player.displayClientMessage(
+            player.sendSystemMessage(
                 Component.literal("You have not founded a settlement yet."),
                 false
             );
@@ -71,7 +71,7 @@ public final class SettlementLedgerItem extends Item {
             "Territory: " + territorySummary
         );
 
-        player.displayClientMessage(Component.literal(overview), false);
+        player.sendSystemMessage(Component.literal(overview), false);
         return InteractionResult.CONSUME;
     }
 }
