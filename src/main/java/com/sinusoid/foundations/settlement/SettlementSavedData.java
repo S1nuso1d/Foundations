@@ -1,6 +1,5 @@
 package com.sinusoid.foundations.settlement;
 
-import com.mojang.serialization.Codec;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.level.saveddata.SavedData;
@@ -11,10 +10,10 @@ public final class SettlementSavedData extends SavedData {
     public static final SavedDataType<SettlementSavedData> TYPE = new SavedDataType<>(
         Identifier.fromNamespaceAndPath("foundations", "foundations_settlements"),
         SettlementSavedData::create,
-        Codec.lazyInitialized(() -> CompoundTag.CODEC.xmap(
+        CompoundTag.CODEC.xmap(
             SettlementSavedData::fromTag,
             data -> SettlementStorageCodec.encode(data.registry, data.territories)
-        )),
+        ),
         null
     );
 
