@@ -65,7 +65,7 @@ public final class SettlementFoundingService {
         SettlementFoundingResult success,
         SettlementFoundingFailure failure
     ) {
-        private FoundingAttemptResult {
+        public FoundingAttemptResult {
             if ((success == null) == (failure == null)) {
                 throw new IllegalArgumentException(
                     "A founding attempt must contain exactly one outcome."
