@@ -12,12 +12,12 @@ import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.BlockHitResult;
 
 /**
  * Physical founding point for a settlement.
@@ -41,7 +41,8 @@ public final class FoundationMarkerBlock extends Block {
         BlockState state,
         Level level,
         BlockPos pos,
-        Player player
+        Player player,
+        BlockHitResult hitResult
     ) {
         if (level.isClientSide()) {
             return InteractionResult.SUCCESS;
@@ -52,7 +53,7 @@ public final class FoundationMarkerBlock extends Block {
         }
 
         Identifier biomeId = serverLevel.registryAccess()
-            .registryOrThrow(Registries.BIOME)
+            .lookupOrThrow(Registries.BIOME)
             .getKey(serverLevel.getBiome(pos).value());
 
         String settlementName = player.getName().getString() + "'s Settlement";
@@ -78,14 +79,12 @@ public final class FoundationMarkerBlock extends Block {
         );
 
         if (result.isSuccess()) {
-            player.sendSystemMessage(
-                Component.literal("Settlement founded: " + result.success().settlement().name()),
-                true
+            player.sendOverlayMessage(
+                Component.literal("Settlement founded: " + result.success().settlement().name())
             );
         } else {
-            player.sendSystemMessage(
-                Component.literal("Cannot found settlement: " + result.failure()),
-                true
+            player.sendOverlayMessage(
+                Component.literal("Cannot found settlement: " + result.failure())
             );
         }
 
