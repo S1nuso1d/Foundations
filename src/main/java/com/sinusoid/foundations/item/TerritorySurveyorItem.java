@@ -98,10 +98,10 @@ public final class TerritorySurveyorItem extends Item {
             return InteractionResult.CONSUME;
         }
 
-        player.displayClientMessage(
-            Component.literal(messageFor(result)),
-            true
-        );
+        String resultMessage = result.status() == TerritoryClaimResult.Status.OWNED_BY_OTHER_SETTLEMENT
+            ? ownershipMessage(worldData, candidate)
+            : messageFor(result);
+        player.displayClientMessage(Component.literal(resultMessage), true);
         if (result.status() == TerritoryClaimResult.Status.ALREADY_CLAIMED) {
             worldData.territories()
                 .find(settlement.get().id())
@@ -129,12 +129,28 @@ public final class TerritorySurveyorItem extends Item {
         } else if (owner.get().equals(settlement.id())) {
             player.displayClientMessage(Component.literal("This cell belongs to your settlement."), true);
         } else {
-            player.displayClientMessage(Component.literal("This cell belongs to another settlement."), true);
+            player.displayClientMessage(
+                Component.literal(ownershipMessage(worldData, cell)),
+                true
+            );
         }
 
         worldData.territories()
             .find(settlement.id())
             .ifPresent(territory -> showBoundary(level, player, territory));
+    }
+
+    private String ownershipMessage(SettlementSavedData worldData, TerritoryCell cell) {
+        Optional<SettlementId> owner = TERRITORY_SERVICE.findOwner(worldData, cell);
+        if (owner.isEmpty()) {
+            return "This territory cell is unclaimed.";
+        }
+
+        String settlementName = worldData.registry()
+            .find(owner.get())
+            .map(Settlement::name)
+            .orElse("another settlement");
+        return "This cell belongs to " + settlementName + ".";
     }
 
     /**
