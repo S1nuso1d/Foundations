@@ -124,16 +124,17 @@ public final class TerritorySurveyorItem extends Item {
         Optional<SettlementId> owner =
             TERRITORY_SERVICE.findOwner(worldData, cell);
 
-        if (owner.isEmpty()) {
-            player.displayClientMessage(Component.literal("This territory cell is unclaimed."), true);
-        } else if (owner.get().equals(settlement.id())) {
-            player.displayClientMessage(Component.literal("This cell belongs to your settlement."), true);
-        } else {
-            player.displayClientMessage(
-                Component.literal(ownershipMessage(worldData, cell)),
-                true
-            );
-        }
+        String ownership = owner.isEmpty()
+            ? "This territory cell is unclaimed."
+            : owner.get().equals(settlement.id())
+                ? "This cell belongs to your settlement."
+                : ownershipMessage(worldData, cell);
+        String coordinates = "Cell: " + cell.x() + ", " + cell.z()
+            + " (" + cell.dimension() + ")";
+        player.displayClientMessage(
+            Component.literal(ownership + " " + coordinates),
+            true
+        );
 
         worldData.territories()
             .find(settlement.id())
