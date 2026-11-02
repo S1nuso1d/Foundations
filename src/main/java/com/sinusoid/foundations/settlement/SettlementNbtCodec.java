@@ -1,18 +1,12 @@
 package com.sinusoid.foundations.settlement;
 
+import java.nio.ByteBuffer;
 import java.util.Objects;
+import java.util.UUID;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.Tag;
 
-/**
- * Serializes the stable settlement domain model to Minecraft NBT.
- *
- * <p>This codec deliberately contains no world-storage logic. It defines the
- * durable representation first; a Forge/Minecraft persistence adapter can then
- * store that representation without leaking NBT into the domain model.</p>
- */
+/** Serializes the stable settlement domain model to Minecraft NBT. */
 public final class SettlementNbtCodec {
-
     private static final String ID = "id";
     private static final String NAME = "name";
     private static final String OWNER = "owner";
@@ -23,72 +17,71 @@ public final class SettlementNbtCodec {
     private static final String Y = "y";
     private static final String Z = "z";
 
-    private SettlementNbtCodec() {
-    }
+    private SettlementNbtCodec() {}
 
     public static CompoundTag encode(Settlement settlement) {
         Objects.requireNonNull(settlement, "settlement");
-
         CompoundTag tag = new CompoundTag();
-        tag.putUUID(ID, settlement.id().value());
+        tag.putString(ID, settlement.id().value().toString());
         tag.putString(NAME, settlement.name());
-        tag.putUUID(OWNER, settlement.owner().playerId());
+        tag.putString(OWNER, settlement.owner().playerId().toString());
         tag.putString(BIOME, settlement.biome().name());
-
         CompoundTag location = new CompoundTag();
         location.putString(DIMENSION, settlement.location().dimension());
         location.putInt(X, settlement.location().x());
         location.putInt(Y, settlement.location().y());
         location.putInt(Z, settlement.location().z());
-
         tag.put(LOCATION, location);
         return tag;
     }
 
     public static Settlement decode(CompoundTag tag) {
         Objects.requireNonNull(tag, "tag");
-
-        require(tag.hasUUID(ID), "Settlement is missing a valid ID.");
-        require(tag.hasUUID(OWNER), "Settlement is missing a valid owner.");
+        require(tag.contains(ID), "Settlement is missing a valid ID.");
+        require(tag.contains(OWNER), "Settlement is missing a valid owner.");
         require(tag.contains(NAME), "Settlement is missing a name.");
         require(tag.contains(BIOME), "Settlement is missing a biome.");
-        require(tag.contains(LOCATION, Tag.TAG_COMPOUND),
-            "Settlement is missing a location.");
-
-        CompoundTag location = tag.getCompound(LOCATION);
-
-        require(location.contains(DIMENSION), "Settlement location is missing a dimension.");
-        require(location.contains(X), "Settlement location is missing X.");
-        require(location.contains(Y), "Settlement location is missing Y.");
-        require(location.contains(Z), "Settlement location is missing Z.");
-
+        require(tag.contains(LOCATION), "Settlement is missing a location.");
+        CompoundTag location = tag.getCompoundOrEmpty(LOCATION);
+        require(location.contains(DIMENSION) && location.contains(X)
+            && location.contains(Y) && location.contains(Z), "Settlement location is incomplete.");
+        String biomeName = tag.getStringOr(BIOME, "");
         final SettlementBiome biome;
         try {
-            biome = SettlementBiome.valueOf(tag.getString(BIOME));
+            biome = SettlementBiome.valueOf(biomeName);
         } catch (IllegalArgumentException exception) {
-            throw new IllegalArgumentException(
-                "Unknown settlement biome: " + tag.getString(BIOME),
-                exception
-            );
+            throw new IllegalArgumentException("Unknown settlement biome: " + biomeName, exception);
         }
-
         return new Settlement(
-            new SettlementId(tag.getUUID(ID)),
-            tag.getString(NAME),
-            new SettlementOwner(tag.getUUID(OWNER)),
+            new SettlementId(readUuid(tag, ID)),
+            tag.getStringOr(NAME, ""),
+            new SettlementOwner(readUuid(tag, OWNER)),
             biome,
-            new SettlementLocation(
-                location.getString(DIMENSION),
-                location.getInt(X),
-                location.getInt(Y),
-                location.getInt(Z)
-            )
+            new SettlementLocation(location.getStringOr(DIMENSION, ""),
+                location.getIntOr(X, 0), location.getIntOr(Y, 0), location.getIntOr(Z, 0))
         );
     }
 
-    private static void require(boolean condition, String message) {
-        if (!condition) {
-            throw new IllegalArgumentException(message);
+    static UUID readUuid(CompoundTag tag, String key) {
+        String encoded = tag.getStringOr(key, "");
+        if (!encoded.isEmpty()) {
+            try {
+                return UUID.fromString(encoded);
+            } catch (IllegalArgumentException ignored) {
+                // Older saves encoded UUIDs as four 32-bit integers.
+            }
         }
+        int[] legacy = tag.getIntArray(key).orElse(null);
+        if (legacy != null && legacy.length == 4) {
+            ByteBuffer bytes = ByteBuffer.allocate(16);
+            for (int part : legacy) bytes.putInt(part);
+            bytes.flip();
+            return new UUID(bytes.getLong(), bytes.getLong());
+        }
+        throw new IllegalArgumentException("Missing or invalid UUID field: " + key);
+    }
+
+    private static void require(boolean condition, String message) {
+        if (!condition) throw new IllegalArgumentException(message);
     }
 }
