@@ -2,32 +2,34 @@ package com.sinusoid.foundations.item;
 
 import com.sinusoid.foundations.settlement.Settlement;
 import com.sinusoid.foundations.settlement.SettlementSavedData;
+import com.sinusoid.foundations.settlement.SettlementTerritory;
 import com.sinusoid.foundations.settlement.SettlementWorldDataAccess;
 import com.sinusoid.foundations.settlement.SettlementWorldTerritoryService;
+import com.sinusoid.foundations.settlement.TerritoryBoundaryEdge;
 import com.sinusoid.foundations.settlement.TerritoryClaimResult;
 import com.sinusoid.foundations.settlement.TerritoryGrid;
 import java.util.Optional;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.context.UseOnContext;
-import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 
 /**
- * Starter tool for claiming territory one grid cell at a time.
- *
- * <p>Right-clicking a block attempts to claim the abstract grid cell containing
- * that block for the player's settlement. The item is reusable and all
- * authoritative checks run on the logical server.</p>
+ * Reusable tool for claiming settlement territory and briefly revealing its
+ * outer boundary with vanilla particles.
  */
 public final class TerritorySurveyorItem extends Item {
 
     private static final TerritoryGrid TERRITORY_GRID = new TerritoryGrid();
     private static final SettlementWorldTerritoryService TERRITORY_SERVICE =
         new SettlementWorldTerritoryService();
+    private static final int PARTICLE_VIEW_DISTANCE_BLOCKS = 48;
+    private static final int PARTICLE_SPACING_BLOCKS = 2;
 
     public TerritorySurveyorItem() {
         super(new Item.Properties().stacksTo(1));
@@ -83,6 +85,7 @@ public final class TerritorySurveyorItem extends Item {
                 Component.literal("Territory expanded: " + result.territory().cellCount() + " cells."),
                 true
             );
+            showBoundary(serverLevel, player, result.territory());
             return InteractionResult.CONSUME;
         }
 
@@ -90,7 +93,80 @@ public final class TerritorySurveyorItem extends Item {
             Component.literal(messageFor(result)),
             true
         );
+        if (result.status() == TerritoryClaimResult.Status.ALREADY_CLAIMED) {
+            TERRITORY_SERVICE.findBoundary(worldData, settlement.get().id())
+                .ifPresent(boundary -> {
+                    SettlementTerritory territory = worldData.territories()
+                        .find(settlement.get().id())
+                        .orElse(null);
+                    if (territory != null) {
+                        showBoundary(serverLevel, player, territory);
+                    }
+                });
+        }
         return InteractionResult.CONSUME;
+    }
+
+    /**
+     * Emits a short-lived vanilla particle outline around exposed cell sides.
+     * Only nearby edge samples are sent, keeping large settlements inexpensive.
+     */
+    private void showBoundary(
+        ServerLevel level,
+        Player player,
+        SettlementTerritory territory
+    ) {
+        double centerX = player.getX();
+        double centerZ = player.getZ();
+        double y = player.getY() + 0.15;
+        double maxDistanceSquared =
+            (double) PARTICLE_VIEW_DISTANCE_BLOCKS * PARTICLE_VIEW_DISTANCE_BLOCKS;
+        int cellSize = TERRITORY_GRID.cellSizeBlocks();
+
+        for (TerritoryBoundaryEdge edge : territory.boundaryEdges()) {
+            double cellMinX = (double) edge.cell().x() * cellSize;
+            double cellMinZ = (double) edge.cell().z() * cellSize;
+
+            for (int offset = 0; offset <= cellSize; offset += PARTICLE_SPACING_BLOCKS) {
+                double x;
+                double z;
+                switch (edge.direction()) {
+                    case NORTH -> {
+                        x = cellMinX + offset;
+                        z = cellMinZ;
+                    }
+                    case EAST -> {
+                        x = cellMinX + cellSize;
+                        z = cellMinZ + offset;
+                    }
+                    case SOUTH -> {
+                        x = cellMinX + offset;
+                        z = cellMinZ + cellSize;
+                    }
+                    case WEST -> {
+                        x = cellMinX;
+                        z = cellMinZ + offset;
+                    }
+                    default -> throw new IllegalStateException("Unknown territory edge direction.");
+                }
+
+                double dx = x - centerX;
+                double dz = z - centerZ;
+                if (dx * dx + dz * dz <= maxDistanceSquared) {
+                    level.sendParticles(
+                        ParticleTypes.END_ROD,
+                        x,
+                        y,
+                        z,
+                        1,
+                        0.0,
+                        0.0,
+                        0.0,
+                        0.0
+                    );
+                }
+            }
+        }
     }
 
     private String messageFor(TerritoryClaimResult result) {
