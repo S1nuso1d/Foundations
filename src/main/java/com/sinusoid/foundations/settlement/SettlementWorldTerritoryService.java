@@ -4,11 +4,10 @@ import java.util.Objects;
 import java.util.Optional;
 
 /**
- * Coordinates territory expansion against one world's saved settlement data.
+ * Coordinates territory queries and expansion against one world's saved data.
  *
- * <p>The domain claim rules remain in {@link TerritoryClaimService}; this
- * adapter only loads the current aggregate, commits a successful replacement,
- * and marks the world data dirty for persistence.</p>
+ * <p>Claim rules remain in {@link TerritoryClaimService}; this adapter commits
+ * successful changes and marks the world data dirty for persistence.</p>
  */
 public final class SettlementWorldTerritoryService {
 
@@ -54,5 +53,17 @@ public final class SettlementWorldTerritoryService {
         }
 
         return Optional.of(result);
+    }
+
+    /**
+     * Returns the owner of a cell, if any, in this world's territory registry.
+     */
+    public Optional<SettlementId> findOwner(
+        SettlementSavedData worldData,
+        TerritoryCell cell
+    ) {
+        Objects.requireNonNull(worldData, "worldData");
+        Objects.requireNonNull(cell, "cell");
+        return worldData.territories().findOwner(cell);
     }
 }
