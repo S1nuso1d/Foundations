@@ -1,5 +1,6 @@
 package com.sinusoid.foundations.settlement;
 
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
@@ -55,9 +56,7 @@ public final class SettlementWorldTerritoryService {
         return Optional.of(result);
     }
 
-    /**
-     * Returns the owner of a cell, if any, in this world's territory registry.
-     */
+    /** Returns the owner of a cell, if any, in this world's territory registry. */
     public Optional<SettlementId> findOwner(
         SettlementSavedData worldData,
         TerritoryCell cell
@@ -65,5 +64,20 @@ public final class SettlementWorldTerritoryService {
         Objects.requireNonNull(worldData, "worldData");
         Objects.requireNonNull(cell, "cell");
         return worldData.territories().findOwner(cell);
+    }
+
+    /**
+     * Returns the exposed outer edges for rendering or map presentation.
+     * Shared sides between neighboring owned cells are not included.
+     */
+    public Optional<List<TerritoryBoundaryEdge>> findBoundary(
+        SettlementSavedData worldData,
+        SettlementId settlementId
+    ) {
+        Objects.requireNonNull(worldData, "worldData");
+        Objects.requireNonNull(settlementId, "settlementId");
+        return worldData.territories()
+            .find(settlementId)
+            .map(SettlementTerritory::boundaryEdges);
     }
 }
