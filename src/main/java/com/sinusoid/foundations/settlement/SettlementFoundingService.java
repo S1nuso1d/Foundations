@@ -1,7 +1,6 @@
 package com.sinusoid.foundations.settlement;
 
 import java.util.Objects;
-import java.util.Optional;
 
 /**
  * Coordinates the domain rules for founding a settlement.
@@ -10,6 +9,8 @@ import java.util.Optional;
  * levels or registries. Forge integration will act as an adapter around it.</p>
  */
 public final class SettlementFoundingService {
+
+    public static final SettlementBiome DEFAULT_BIOME = SettlementBiome.PLAINS;
 
     private final SettlementRegistry registry;
     private final SettlementBiomeResolver biomeResolver;
@@ -31,17 +32,29 @@ public final class SettlementFoundingService {
             );
         }
 
-        Optional<SettlementBiome> biome = biomeResolver.resolve(request.biomeId());
-        if (biome.isEmpty()) {
-            return FoundingAttemptResult.failure(
-                SettlementFoundingFailure.UNSUPPORTED_BIOME
+        SettlementBiomeResolution resolution = Objects.requireNonNull(
+            biomeResolver.resolve(request.biomeId()),
+            "biomeResolver result"
+        );
+
+        final SettlementBiome biome;
+        switch (resolution.status()) {
+            case SUPPORTED -> biome = resolution.biome();
+            case UNDETERMINED -> biome = DEFAULT_BIOME;
+            case UNSUPPORTED -> {
+                return FoundingAttemptResult.failure(
+                    SettlementFoundingFailure.UNSUPPORTED_BIOME
+                );
+            }
+            default -> throw new IllegalStateException(
+                "Unhandled biome resolution status: " + resolution.status()
             );
         }
 
         Settlement settlement = registry.create(
             request.name(),
             request.owner(),
-            biome.get(),
+            biome,
             request.location()
         );
 
