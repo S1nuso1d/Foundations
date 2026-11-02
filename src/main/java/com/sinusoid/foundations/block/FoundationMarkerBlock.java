@@ -10,7 +10,7 @@ import com.sinusoid.foundations.settlement.VanillaSettlementBiomeResolver;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
@@ -51,7 +51,7 @@ public final class FoundationMarkerBlock extends Block {
             return InteractionResult.PASS;
         }
 
-        ResourceLocation biomeId = serverLevel.registryAccess()
+        Identifier biomeId = serverLevel.registryAccess()
             .registryOrThrow(Registries.BIOME)
             .getKey(serverLevel.getBiome(pos).value());
 
