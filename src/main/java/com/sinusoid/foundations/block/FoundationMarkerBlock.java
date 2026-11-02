@@ -5,6 +5,7 @@ import com.sinusoid.foundations.settlement.SettlementLocation;
 import com.sinusoid.foundations.settlement.SettlementOwner;
 import com.sinusoid.foundations.settlement.SettlementWorldDataAccess;
 import com.sinusoid.foundations.settlement.SettlementWorldFoundingService;
+import com.sinusoid.foundations.settlement.TerritoryGrid;
 import com.sinusoid.foundations.settlement.VanillaSettlementBiomeResolver;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.Registries;
@@ -29,6 +30,7 @@ public final class FoundationMarkerBlock extends Block {
 
     private static final SettlementWorldFoundingService FOUNDING_SERVICE =
         new SettlementWorldFoundingService(new VanillaSettlementBiomeResolver());
+    private static final TerritoryGrid TERRITORY_GRID = new TerritoryGrid();
 
     public FoundationMarkerBlock() {
         super(Properties.of().strength(3.5F));
@@ -67,9 +69,12 @@ public final class FoundationMarkerBlock extends Block {
             biomeId == null ? "foundations:undetermined" : biomeId.toString()
         );
 
+        String dimensionId = serverLevel.dimension().location().toString();
+        var centerCell = TERRITORY_GRID.cellAt(dimensionId, pos.getX(), pos.getZ());
         var result = FOUNDING_SERVICE.found(
             SettlementWorldDataAccess.get(serverLevel),
-            request
+            request,
+            centerCell
         );
 
         if (result.isSuccess()) {
