@@ -3,14 +3,12 @@ package com.sinusoid.foundations.settlement;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Optional;
 
 /**
  * Classification rules for known vanilla Minecraft biome identifiers.
  *
- * <p>Unknown identifiers deliberately return {@link Optional#empty()}.
- * Silently classifying every modded biome as a vanilla environment would make
- * settlement appearance unpredictable and hide missing compatibility rules.</p>
+ * <p>Unknown identifiers are undetermined, not rejected. The founding
+ * service can then apply its configured neutral default.</p>
  */
 public final class VanillaSettlementBiomeResolver implements SettlementBiomeResolver {
 
@@ -53,8 +51,11 @@ public final class VanillaSettlementBiomeResolver implements SettlementBiomeReso
     );
 
     @Override
-    public Optional<SettlementBiome> resolve(String biomeId) {
+    public SettlementBiomeResolution resolve(String biomeId) {
         Objects.requireNonNull(biomeId, "biomeId");
-        return Optional.ofNullable(RULES.get(biomeId.trim().toLowerCase(Locale.ROOT)));
+        SettlementBiome biome = RULES.get(biomeId.trim().toLowerCase(Locale.ROOT));
+        return biome == null
+            ? SettlementBiomeResolution.undetermined()
+            : SettlementBiomeResolution.supported(biome);
     }
 }
