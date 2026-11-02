@@ -8,5 +8,6 @@ package com.sinusoid.foundations.settlement;
  */
 public enum SettlementFoundingFailure {
     OWNER_ALREADY_HAS_SETTLEMENT,
-    UNSUPPORTED_BIOME
+    UNSUPPORTED_BIOME,
+    TERRITORY_OWNED_BY_OTHER_SETTLEMENT
 }
