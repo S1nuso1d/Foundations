@@ -61,7 +61,7 @@ public final class FoundationMarkerBlock extends Block {
             settlementName,
             new SettlementOwner(player.getUUID()),
             new SettlementLocation(
-                serverLevel.dimension().location().toString(),
+                serverLevel.dimension().identifier().toString(),
                 pos.getX(),
                 pos.getY(),
                 pos.getZ()
@@ -69,7 +69,7 @@ public final class FoundationMarkerBlock extends Block {
             biomeId == null ? "foundations:undetermined" : biomeId.toString()
         );
 
-        String dimensionId = serverLevel.dimension().location().toString();
+        String dimensionId = serverLevel.dimension().identifier().toString();
         var centerCell = TERRITORY_GRID.cellAt(dimensionId, pos.getX(), pos.getZ());
         var result = FOUNDING_SERVICE.found(
             SettlementWorldDataAccess.get(serverLevel),
@@ -78,12 +78,12 @@ public final class FoundationMarkerBlock extends Block {
         );
 
         if (result.isSuccess()) {
-            player.displayClientMessage(
+            player.sendSystemMessage(
                 Component.literal("Settlement founded: " + result.success().settlement().name()),
                 true
             );
         } else {
-            player.displayClientMessage(
+            player.sendSystemMessage(
                 Component.literal("Cannot found settlement: " + result.failure()),
                 true
             );
