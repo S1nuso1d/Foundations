@@ -47,6 +47,16 @@ public final class SettlementRegistry {
         return settlement;
     }
 
+    public boolean unregister(SettlementId id) {
+        Objects.requireNonNull(id, "id");
+        Settlement removed = settlementsById.remove(id);
+        if (removed == null) {
+            return false;
+        }
+        settlementByOwner.remove(removed.owner().playerId(), id);
+        return true;
+    }
+
     public Optional<Settlement> find(SettlementId id) {
         Objects.requireNonNull(id, "id");
         return Optional.ofNullable(settlementsById.get(id));
