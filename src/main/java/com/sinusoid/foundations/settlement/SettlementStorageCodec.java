@@ -64,9 +64,9 @@ public final class SettlementStorageCodec {
         }
 
         TerritoryRegistry territories = new TerritoryRegistry();
-        ListTag entries = root.getListOrEmpty(TERRITORIES);
-        for (int index = 0; index < entries.size(); index++) {
-                SettlementTerritory territory = TerritoryNbtCodec.decode(entries.getCompoundOrEmpty(index));
+        ListTag territoryEntries = root.getListOrEmpty(TERRITORIES);
+        for (int index = 0; index < territoryEntries.size(); index++) {
+                SettlementTerritory territory = TerritoryNbtCodec.decode(territoryEntries.getCompoundOrEmpty(index));
                 if (settlements.find(territory.settlementId()).isEmpty()) {
                     throw new IllegalArgumentException(
                         "Saved territory references a settlement that does not exist."
