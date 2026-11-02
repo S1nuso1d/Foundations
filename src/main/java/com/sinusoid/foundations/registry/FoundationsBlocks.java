@@ -15,7 +15,11 @@ public final class FoundationsBlocks {
         DeferredRegister.createBlocks(Foundations.MOD_ID);
 
     public static final DeferredBlock<Block> FOUNDATION_MARKER =
-        BLOCKS.register("foundation_marker", FoundationMarkerBlock::new);
+        BLOCKS.registerBlock(
+            "foundation_marker",
+            FoundationMarkerBlock::new,
+            properties -> properties.strength(3.5F)
+        );
 
     private FoundationsBlocks() {
     }
