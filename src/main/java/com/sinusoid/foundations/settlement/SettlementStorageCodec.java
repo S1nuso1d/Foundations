@@ -17,6 +17,7 @@ public final class SettlementStorageCodec {
 
     private static final String DATA_VERSION = "data_version";
     private static final String SETTLEMENTS = "settlements";
+    private static final String TERRITORIES = "territories";
     private static final int CURRENT_VERSION = 1;
 
     private SettlementStorageCodec() {
@@ -37,7 +38,7 @@ public final class SettlementStorageCodec {
         return root;
     }
 
-    public static SettlementRegistry decode(CompoundTag root) {
+    public record DecodedData(SettlementRegistry settlements, TerritoryRegistry territories) {\n    }\n\n    public static CompoundTag encode(SettlementRegistry settlements, TerritoryRegistry territories) {\n        Objects.requireNonNull(settlements, "settlements");\n        Objects.requireNonNull(territories, "territories");\n        CompoundTag root = encode(settlements.all());\n        ListTag entries = new ListTag();\n        for (SettlementTerritory territory : territories.all()) {\n            entries.add(TerritoryNbtCodec.encode(territory));\n        }\n        root.put(TERRITORIES, entries);\n        return root;\n    }\n\n    public static DecodedData decodeAll(CompoundTag root) {
         Objects.requireNonNull(root, "root");
 
         int version = root.contains(DATA_VERSION, Tag.TAG_INT)
@@ -69,7 +70,7 @@ public final class SettlementStorageCodec {
         return registry;
     }
 
-    public static int currentVersion() {
+    public static SettlementRegistry decode(CompoundTag root) {\n        return decodeAll(root).settlements();\n    }\n\n    public static int currentVersion() {
         return CURRENT_VERSION;
     }
 }
