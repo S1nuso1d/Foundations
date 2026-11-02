@@ -2,6 +2,7 @@ package com.sinusoid.foundations.settlement;
 
 import java.util.Objects;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.Tag;
 
 /**
  * Serializes the stable settlement domain model to Minecraft NBT.
@@ -51,7 +52,7 @@ public final class SettlementNbtCodec {
         require(tag.hasUUID(OWNER), "Settlement is missing a valid owner.");
         require(tag.contains(NAME), "Settlement is missing a name.");
         require(tag.contains(BIOME), "Settlement is missing a biome.");
-        require(tag.contains(LOCATION, CompoundTag.TAG_COMPOUND),
+        require(tag.contains(LOCATION, Tag.TAG_COMPOUND),
             "Settlement is missing a location.");
 
         CompoundTag location = tag.getCompound(LOCATION);
