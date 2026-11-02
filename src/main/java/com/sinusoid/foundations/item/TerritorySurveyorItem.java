@@ -94,15 +94,9 @@ public final class TerritorySurveyorItem extends Item {
             true
         );
         if (result.status() == TerritoryClaimResult.Status.ALREADY_CLAIMED) {
-            TERRITORY_SERVICE.findBoundary(worldData, settlement.get().id())
-                .ifPresent(boundary -> {
-                    SettlementTerritory territory = worldData.territories()
-                        .find(settlement.get().id())
-                        .orElse(null);
-                    if (territory != null) {
-                        showBoundary(serverLevel, player, territory);
-                    }
-                });
+            worldData.territories()
+                .find(settlement.get().id())
+                .ifPresent(territory -> showBoundary(serverLevel, player, territory));
         }
         return InteractionResult.CONSUME;
     }
