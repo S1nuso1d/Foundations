@@ -20,6 +20,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.levelgen.Heightmap;
 
 /**
  * Reusable tool for claiming settlement territory and briefly revealing its
@@ -147,7 +148,6 @@ public final class TerritorySurveyorItem extends Item {
     ) {
         double centerX = player.getX();
         double centerZ = player.getZ();
-        double y = player.getY() + 0.15;
         double maxDistanceSquared =
             (double) PARTICLE_VIEW_DISTANCE_BLOCKS * PARTICLE_VIEW_DISTANCE_BLOCKS;
         int cellSize = TERRITORY_GRID.cellSizeBlocks();
@@ -182,6 +182,24 @@ public final class TerritorySurveyorItem extends Item {
                 double dx = x - centerX;
                 double dz = z - centerZ;
                 if (dx * dx + dz * dz <= maxDistanceSquared) {
+                    int sampleX = (int) Math.floor(x);
+                    int sampleZ = (int) Math.floor(z);
+
+                    // Sample just inside the claimed cell so the outline follows
+                    // its terrain rather than the neighboring unclaimed column.
+                    switch (edge.direction()) {
+                        case EAST -> sampleX--;
+                        case SOUTH -> sampleZ--;
+                        default -> {
+                        }
+                    }
+
+                    double y = level.getHeight(
+                        Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,
+                        sampleX,
+                        sampleZ
+                    ).getY() + 0.12;
+
                     level.sendParticles(
                         ParticleTypes.END_ROD,
                         x,
