@@ -53,7 +53,7 @@ public final class TerritorySurveyorItem extends Item {
         SettlementSavedData worldData = SettlementWorldDataAccess.get(serverLevel);
         Optional<Settlement> settlement = worldData.registry().findByOwner(player.getUUID());
         if (settlement.isEmpty()) {
-            player.displayClientMessage(
+            player.sendSystemMessage(
                 Component.literal("You must found a settlement before claiming territory."),
                 true
             );
@@ -61,7 +61,7 @@ public final class TerritorySurveyorItem extends Item {
         }
 
         BlockPos clickedPos = context.getClickedPos();
-        String dimensionId = serverLevel.dimension().location().toString();
+        String dimensionId = serverLevel.dimension().identifier().toString();
         var candidate = TERRITORY_GRID.cellAt(
             dimensionId,
             clickedPos.getX(),
@@ -81,7 +81,7 @@ public final class TerritorySurveyorItem extends Item {
         );
 
         if (attempt.isEmpty()) {
-            player.displayClientMessage(
+            player.sendSystemMessage(
                 Component.literal("Your settlement has no registered territory."),
                 true
             );
@@ -90,7 +90,7 @@ public final class TerritorySurveyorItem extends Item {
 
         TerritoryClaimResult result = attempt.get();
         if (result.isClaimed()) {
-            player.displayClientMessage(
+            player.sendSystemMessage(
                 Component.literal("Territory expanded: " + result.territory().cellCount() + " cells."),
                 true
             );
@@ -101,7 +101,7 @@ public final class TerritorySurveyorItem extends Item {
         String resultMessage = result.status() == TerritoryClaimResult.Status.OWNED_BY_OTHER_SETTLEMENT
             ? ownershipMessage(worldData, candidate)
             : messageFor(result);
-        player.displayClientMessage(Component.literal(resultMessage), true);
+        player.sendSystemMessage(Component.literal(resultMessage), true);
         if (result.status() == TerritoryClaimResult.Status.ALREADY_CLAIMED) {
             worldData.territories()
                 .find(settlement.get().id())
@@ -131,7 +131,7 @@ public final class TerritorySurveyorItem extends Item {
                 : ownershipMessage(worldData, cell);
         String coordinates = "Cell: " + cell.x() + ", " + cell.z()
             + " (" + cell.dimension() + ")";
-        player.displayClientMessage(
+        player.sendSystemMessage(
             Component.literal(ownership + " " + coordinates),
             true
         );
