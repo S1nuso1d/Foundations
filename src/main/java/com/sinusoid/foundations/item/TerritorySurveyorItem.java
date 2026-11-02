@@ -65,6 +65,12 @@ public final class TerritorySurveyorItem extends Item {
             clickedPos.getZ()
         );
 
+        // Sneak + right-click inspects ownership without changing the world.
+        if (player.isShiftKeyDown()) {
+            inspectCell(serverLevel, player, worldData, settlement.get(), candidate);
+            return InteractionResult.CONSUME;
+        }
+
         Optional<TerritoryClaimResult> attempt = TERRITORY_SERVICE.claimAdjacentCell(
             worldData,
             settlement.get().id(),
@@ -99,6 +105,33 @@ public final class TerritorySurveyorItem extends Item {
                 .ifPresent(territory -> showBoundary(serverLevel, player, territory));
         }
         return InteractionResult.CONSUME;
+    }
+
+    /**
+     * Reports cell ownership without claiming it. The player's own territory
+     * outline is shown as a visual reference when available.
+     */
+    private void inspectCell(
+        ServerLevel level,
+        Player player,
+        SettlementSavedData worldData,
+        Settlement settlement,
+        com.sinusoid.foundations.settlement.TerritoryCell cell
+    ) {
+        Optional<com.sinusoid.foundations.settlement.SettlementId> owner =
+            TERRITORY_SERVICE.findOwner(worldData, cell);
+
+        if (owner.isEmpty()) {
+            player.displayClientMessage(Component.literal("This territory cell is unclaimed."), true);
+        } else if (owner.get().equals(settlement.id())) {
+            player.displayClientMessage(Component.literal("This cell belongs to your settlement."), true);
+        } else {
+            player.displayClientMessage(Component.literal("This cell belongs to another settlement."), true);
+        }
+
+        worldData.territories()
+            .find(settlement.id())
+            .ifPresent(territory -> showBoundary(level, player, territory));
     }
 
     /**
