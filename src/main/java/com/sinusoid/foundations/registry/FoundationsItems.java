@@ -1,6 +1,7 @@
 package com.sinusoid.foundations.registry;
 
 import com.sinusoid.foundations.Foundations;
+import com.sinusoid.foundations.item.TerritorySurveyorItem;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
 import net.minecraftforge.registries.DeferredRegister;
@@ -23,6 +24,9 @@ public final class FoundationsItems {
                 new Item.Properties()
             )
         );
+
+    public static final RegistryObject<Item> TERRITORY_SURVEYOR =
+        ITEMS.register("territory_surveyor", TerritorySurveyorItem::new);
 
     private FoundationsItems() {
     }
