@@ -76,7 +76,13 @@ public final class SettlementStorageCodec {
                 if (!(entry instanceof CompoundTag territoryTag)) {
                     throw new IllegalArgumentException("Invalid territory entry in saved data.");
                 }
-                SettlementTerritory territory = TerritoryNbtCodec.decode(territoryTag);\n                if (settlements.find(territory.settlementId()).isEmpty()) {\n                    throw new IllegalArgumentException(\n                        "Saved territory references a settlement that does not exist."\n                    );\n                }\n                territories.register(territory);
+                SettlementTerritory territory = TerritoryNbtCodec.decode(territoryTag);
+                if (settlements.find(territory.settlementId()).isEmpty()) {
+                    throw new IllegalArgumentException(
+                        "Saved territory references a settlement that does not exist."
+                    );
+                }
+                territories.register(territory);
             }
         }
         return new DecodedData(settlements, territories);
