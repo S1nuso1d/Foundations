@@ -53,26 +53,18 @@ public final class FoundationMarkerBlock extends Block {
             .registryOrThrow(Registries.BIOME)
             .getKey(serverLevel.getBiome(pos).value());
 
-        if (biomeId == null) {
-            player.displayClientMessage(
-                Component.literal("Unable to determine the biome here."),
-                true
-            );
-            return InteractionResult.CONSUME;
-        }
-
         String settlementName = player.getName().getString() + "'s Settlement";
 
         SettlementFoundingRequest request = new SettlementFoundingRequest(
             settlementName,
             new SettlementOwner(player.getUUID()),
-            biomeId.toString(),
             new SettlementLocation(
                 serverLevel.dimension().location().toString(),
                 pos.getX(),
                 pos.getY(),
                 pos.getZ()
-            )
+            ),
+            biomeId == null ? "foundations:undetermined" : biomeId.toString()
         );
 
         var result = FOUNDING_SERVICE.found(
