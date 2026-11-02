@@ -4,7 +4,6 @@ import java.util.Collection;
 import java.util.Objects;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
-import net.minecraft.nbt.Tag;
 
 /** Versioned NBT representation of settlements and their territories. */
 public final class SettlementStorageCodec {
@@ -50,7 +49,7 @@ public final class SettlementStorageCodec {
 
     public static DecodedData decodeAll(CompoundTag root) {
         Objects.requireNonNull(root, "root");
-        int version = root.contains(DATA_VERSION, Tag.TAG_INT) ? root.getInt(DATA_VERSION) : 0;
+        int version = root.getIntOr(DATA_VERSION, 0);
         if (version > CURRENT_VERSION) {
             throw new IllegalArgumentException(
                 "Settlement data version " + version
@@ -59,31 +58,21 @@ public final class SettlementStorageCodec {
         }
 
         SettlementRegistry settlements = new SettlementRegistry();
-        if (root.contains(SETTLEMENTS, Tag.TAG_LIST)) {
-            ListTag entries = root.getList(SETTLEMENTS, Tag.TAG_COMPOUND);
-            for (Tag entry : entries) {
-                if (!(entry instanceof CompoundTag settlementTag)) {
-                    throw new IllegalArgumentException("Invalid settlement entry in saved data.");
-                }
-                settlements.register(SettlementNbtCodec.decode(settlementTag));
-            }
+        ListTag entries = root.getListOrEmpty(SETTLEMENTS);
+        for (int index = 0; index < entries.size(); index++) {
+            settlements.register(SettlementNbtCodec.decode(entries.getCompoundOrEmpty(index)));
         }
 
         TerritoryRegistry territories = new TerritoryRegistry();
-        if (root.contains(TERRITORIES, Tag.TAG_LIST)) {
-            ListTag entries = root.getList(TERRITORIES, Tag.TAG_COMPOUND);
-            for (Tag entry : entries) {
-                if (!(entry instanceof CompoundTag territoryTag)) {
-                    throw new IllegalArgumentException("Invalid territory entry in saved data.");
-                }
-                SettlementTerritory territory = TerritoryNbtCodec.decode(territoryTag);
+        ListTag entries = root.getListOrEmpty(TERRITORIES);
+        for (int index = 0; index < entries.size(); index++) {
+                SettlementTerritory territory = TerritoryNbtCodec.decode(entries.getCompoundOrEmpty(index));
                 if (settlements.find(territory.settlementId()).isEmpty()) {
                     throw new IllegalArgumentException(
                         "Saved territory references a settlement that does not exist."
                     );
                 }
                 territories.register(territory);
-            }
         }
         return new DecodedData(settlements, territories);
     }
