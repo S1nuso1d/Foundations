@@ -54,7 +54,7 @@ public final class SettlementLedgerItem extends Item {
                 + value.boundaryEdgeCount() + " outer edges")
             .orElse("No registered territory");
 
-        String overview = String.join("\\n",
+        String overview = String.join("\n",
             "=== " + founded.name() + " ===",
             "Environment: " + founded.biome().name(),
             "Founded at: " + founded.location().x() + ", "
