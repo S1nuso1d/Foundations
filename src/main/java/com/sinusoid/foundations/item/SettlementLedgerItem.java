@@ -4,6 +4,7 @@ import com.sinusoid.foundations.settlement.Settlement;
 import com.sinusoid.foundations.settlement.SettlementSavedData;
 import com.sinusoid.foundations.settlement.SettlementTerritory;
 import com.sinusoid.foundations.settlement.SettlementWorldDataAccess;
+import com.sinusoid.foundations.settlement.TerritoryGrid;
 import java.util.Optional;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
@@ -49,9 +50,16 @@ public final class SettlementLedgerItem extends Item {
         Optional<SettlementTerritory> territory =
             worldData.territories().find(founded.id());
 
+        TerritoryGrid grid = new TerritoryGrid();
         String territorySummary = territory
-            .map(value -> value.cellCount() + " claimed cells, "
-                + value.boundaryEdgeCount() + " outer edges")
+            .map(value -> {
+                long cellArea = (long) grid.cellSizeBlocks() * grid.cellSizeBlocks();
+                long area = value.cellCount() * cellArea;
+                long perimeter = (long) value.boundaryEdgeCount() * grid.cellSizeBlocks();
+                return value.cellCount() + " claimed cells"
+                    + "\nArea: " + area + " blocks²"
+                    + "\nOuter perimeter: " + perimeter + " blocks";
+            })
             .orElse("No registered territory");
 
         String overview = String.join("\n",
