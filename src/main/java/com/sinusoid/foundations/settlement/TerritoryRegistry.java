@@ -50,6 +50,21 @@ public final class TerritoryRegistry {
         return Optional.ofNullable(territories.get(settlementId));
     }
 
+    /**
+     * Finds the settlement that owns a cell in this world's territory index.
+     * The dimension is part of the cell identity, so equal coordinates in
+     * different dimensions are independent.
+     */
+    public Optional<SettlementId> findOwner(TerritoryCell cell) {
+        Objects.requireNonNull(cell, "cell");
+        for (SettlementTerritory territory : territories.values()) {
+            if (territory.contains(cell)) {
+                return Optional.of(territory.settlementId());
+            }
+        }
+        return Optional.empty();
+    }
+
     public Collection<SettlementTerritory> all() {
         return List.copyOf(territories.values());
     }
