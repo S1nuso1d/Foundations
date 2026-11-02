@@ -6,13 +6,7 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
 
-/**
- * Durable representation of the complete settlement collection.
- *
- * <p>This class owns the save format for the settlement subsystem. The actual
- * Minecraft world storage mechanism is intentionally separate so the domain
- * format can be tested and evolved independently.</p>
- */
+/** Versioned NBT representation of settlements and their territories. */
 public final class SettlementStorageCodec {
 
     private static final String DATA_VERSION = "data_version";
@@ -23,28 +17,40 @@ public final class SettlementStorageCodec {
     private SettlementStorageCodec() {
     }
 
+    public record DecodedData(SettlementRegistry settlements, TerritoryRegistry territories) {
+        public DecodedData {
+            Objects.requireNonNull(settlements, "settlements");
+            Objects.requireNonNull(territories, "territories");
+        }
+    }
+
     public static CompoundTag encode(Collection<Settlement> settlements) {
         Objects.requireNonNull(settlements, "settlements");
-
         CompoundTag root = new CompoundTag();
         root.putInt(DATA_VERSION, CURRENT_VERSION);
-
         ListTag entries = new ListTag();
         for (Settlement settlement : settlements) {
             entries.add(SettlementNbtCodec.encode(settlement));
         }
-
         root.put(SETTLEMENTS, entries);
         return root;
     }
 
-    public record DecodedData(SettlementRegistry settlements, TerritoryRegistry territories) {\n    }\n\n    public static CompoundTag encode(SettlementRegistry settlements, TerritoryRegistry territories) {\n        Objects.requireNonNull(settlements, "settlements");\n        Objects.requireNonNull(territories, "territories");\n        CompoundTag root = encode(settlements.all());\n        ListTag entries = new ListTag();\n        for (SettlementTerritory territory : territories.all()) {\n            entries.add(TerritoryNbtCodec.encode(territory));\n        }\n        root.put(TERRITORIES, entries);\n        return root;\n    }\n\n    public static DecodedData decodeAll(CompoundTag root) {
+    public static CompoundTag encode(SettlementRegistry settlements, TerritoryRegistry territories) {
+        Objects.requireNonNull(settlements, "settlements");
+        Objects.requireNonNull(territories, "territories");
+        CompoundTag root = encode(settlements.all());
+        ListTag entries = new ListTag();
+        for (SettlementTerritory territory : territories.all()) {
+            entries.add(TerritoryNbtCodec.encode(territory));
+        }
+        root.put(TERRITORIES, entries);
+        return root;
+    }
+
+    public static DecodedData decodeAll(CompoundTag root) {
         Objects.requireNonNull(root, "root");
-
-        int version = root.contains(DATA_VERSION, Tag.TAG_INT)
-            ? root.getInt(DATA_VERSION)
-            : 0;
-
+        int version = root.contains(DATA_VERSION, Tag.TAG_INT) ? root.getInt(DATA_VERSION) : 0;
         if (version > CURRENT_VERSION) {
             throw new IllegalArgumentException(
                 "Settlement data version " + version
@@ -52,25 +58,36 @@ public final class SettlementStorageCodec {
             );
         }
 
-        SettlementRegistry registry = new SettlementRegistry();
-
-        if (!root.contains(SETTLEMENTS, Tag.TAG_LIST)) {
-            return registry;
-        }
-
-        ListTag entries = root.getList(SETTLEMENTS, Tag.TAG_COMPOUND);
-        for (Tag entry : entries) {
-            if (!(entry instanceof CompoundTag settlementTag)) {
-                throw new IllegalArgumentException("Invalid settlement entry in saved data.");
+        SettlementRegistry settlements = new SettlementRegistry();
+        if (root.contains(SETTLEMENTS, Tag.TAG_LIST)) {
+            ListTag entries = root.getList(SETTLEMENTS, Tag.TAG_COMPOUND);
+            for (Tag entry : entries) {
+                if (!(entry instanceof CompoundTag settlementTag)) {
+                    throw new IllegalArgumentException("Invalid settlement entry in saved data.");
+                }
+                settlements.register(SettlementNbtCodec.decode(settlementTag));
             }
-
-            registry.register(SettlementNbtCodec.decode(settlementTag));
         }
 
-        return registry;
+        TerritoryRegistry territories = new TerritoryRegistry();
+        if (root.contains(TERRITORIES, Tag.TAG_LIST)) {
+            ListTag entries = root.getList(TERRITORIES, Tag.TAG_COMPOUND);
+            for (Tag entry : entries) {
+                if (!(entry instanceof CompoundTag territoryTag)) {
+                    throw new IllegalArgumentException("Invalid territory entry in saved data.");
+                }
+                territories.register(TerritoryNbtCodec.decode(territoryTag));
+            }
+        }
+        return new DecodedData(settlements, territories);
     }
 
-    public static SettlementRegistry decode(CompoundTag root) {\n        return decodeAll(root).settlements();\n    }\n\n    public static int currentVersion() {
+    /** Backwards-compatible settlement-only view of the decoded data. */
+    public static SettlementRegistry decode(CompoundTag root) {
+        return decodeAll(root).settlements();
+    }
+
+    public static int currentVersion() {
         return CURRENT_VERSION;
     }
 }
