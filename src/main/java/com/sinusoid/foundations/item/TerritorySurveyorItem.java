@@ -1,12 +1,14 @@
 package com.sinusoid.foundations.item;
 
 import com.sinusoid.foundations.settlement.Settlement;
+import com.sinusoid.foundations.settlement.SettlementId;
 import com.sinusoid.foundations.settlement.SettlementSavedData;
 import com.sinusoid.foundations.settlement.SettlementTerritory;
 import com.sinusoid.foundations.settlement.SettlementWorldDataAccess;
 import com.sinusoid.foundations.settlement.SettlementWorldTerritoryService;
 import com.sinusoid.foundations.settlement.TerritoryBoundaryEdge;
 import com.sinusoid.foundations.settlement.TerritoryClaimResult;
+import com.sinusoid.foundations.settlement.TerritoryCell;
 import com.sinusoid.foundations.settlement.TerritoryGrid;
 import java.util.Optional;
 import net.minecraft.core.BlockPos;
@@ -116,9 +118,9 @@ public final class TerritorySurveyorItem extends Item {
         Player player,
         SettlementSavedData worldData,
         Settlement settlement,
-        com.sinusoid.foundations.settlement.TerritoryCell cell
+        TerritoryCell cell
     ) {
-        Optional<com.sinusoid.foundations.settlement.SettlementId> owner =
+        Optional<SettlementId> owner =
             TERRITORY_SERVICE.findOwner(worldData, cell);
 
         if (owner.isEmpty()) {
