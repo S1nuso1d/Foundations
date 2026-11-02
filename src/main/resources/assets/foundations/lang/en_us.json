@@ -1,5 +1,6 @@
 {
   "block.foundations.foundation_marker": "Foundation Marker",
   "item.foundations.foundation_marker": "Foundation Marker",
-  "item.foundations.territory_surveyor": "Territory Surveyor"
+  "item.foundations.territory_surveyor": "Territory Surveyor",
+  "item.foundations.settlement_ledger": "Settlement Ledger"
 }
