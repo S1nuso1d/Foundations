@@ -3,9 +3,9 @@ package com.sinusoid.foundations;
 import com.mojang.logging.LogUtils;
 import com.sinusoid.foundations.registry.FoundationsBlocks;
 import com.sinusoid.foundations.registry.FoundationsItems;
-import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
-import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
+import net.neoforged.bus.api.IEventBus;
+import net.neoforged.fml.common.Mod;
+import net.neoforged.fml.event.lifecycle.FMLCommonSetupEvent;
 import org.slf4j.Logger;
 
 /**
@@ -21,11 +21,10 @@ public final class Foundations {
 
     private static final Logger LOGGER = LogUtils.getLogger();
 
-    public Foundations(FMLJavaModLoadingContext context) {
-        FoundationsBlocks.BLOCKS.register(context.getModBusGroup());
-        FoundationsItems.ITEMS.register(context.getModBusGroup());
-
-        FMLCommonSetupEvent.getBus(context.getModBusGroup()).addListener(this::onCommonSetup);
+    public Foundations(IEventBus modEventBus) {
+        FoundationsBlocks.BLOCKS.register(modEventBus);
+        FoundationsItems.ITEMS.register(modEventBus);
+        modEventBus.addListener(this::onCommonSetup);
     }
 
     private void onCommonSetup(FMLCommonSetupEvent event) {
