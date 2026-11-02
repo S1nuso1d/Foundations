@@ -35,7 +35,7 @@ public final class TerritoryNbtCodec {
 
     public static SettlementTerritory decode(CompoundTag tag) {
         Objects.requireNonNull(tag, "tag");
-        if (!tag.hasUUID(SETTLEMENT_ID)
+        if (!tag.contains(SETTLEMENT_ID)
             || !tag.contains(DIMENSION)
             || !tag.contains(CELLS)) {
             throw new IllegalArgumentException("Invalid saved settlement territory.");
@@ -54,7 +54,7 @@ public final class TerritoryNbtCodec {
 
         return new SettlementTerritory(
             new SettlementId(SettlementNbtCodec.readUuid(tag, SETTLEMENT_ID)),
-            tag.getString(DIMENSION),
+            tag.getStringOr(DIMENSION, ""),
             cells
         );
     }
