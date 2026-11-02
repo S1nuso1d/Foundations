@@ -36,17 +36,11 @@ public final class SettlementSavedData extends SavedData {
     }
 
     /**
-     * Marks settlement world data dirty after a successful mutation.
+     * Marks the world data dirty after an external domain service mutates the
+     * authoritative registry.
      */
-    public Settlement createSettlement(
-        String name,
-        SettlementOwner owner,
-        SettlementBiome biome,
-        SettlementLocation location
-    ) {
-        Settlement settlement = registry.create(name, owner, biome, location);
+    public void markChanged() {
         setDirty();
-        return settlement;
     }
 
     @Override
